@@ -6,6 +6,7 @@ from PIL import Image,ImageDraw, ImageFont
 import cv2
 import numpy as np
 from io import BytesIO
+import gdown
 
 
 @st.cache_resource
@@ -175,3 +176,17 @@ if uploaded_file is not None:
         file_name="prediction_report.png",
         mime="image/png"
     )
+
+@st.cache_resource
+def load_model():
+    # Google Drive model download
+    url = "https://drive.google.com/uc?id=12HjPXAm5ojN_ksouAHFYutfag4C5vqeM"
+    output = "real_vs_fake_model.pth"
+    gdown.download(url, output, quiet=False)
+
+    # Load model
+    model = models.resnet18(weights=None)
+    model.fc = nn.Linear(model.fc.in_features, 2)
+    model.load_state_dict(torch.load(output, map_location=torch.device("cpu")))
+    model.eval()
+    return model
